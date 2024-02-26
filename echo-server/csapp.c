@@ -609,6 +609,8 @@ void Getaddrinfo(const char *node, const char *service,
 }
 /* $end getaddrinfo */
 
+/* 소켓 주소를 호스트 이름과 포트 번호로 변환하는 역할
+   Getnameinfo(소켓 주소, 크기, 호스트 이름, 호스트 최대길이, 포트번호, 포트번호 최대길이,플래그)*/
 void Getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host, 
                  size_t hostlen, char *serv, size_t servlen, int flags)
 {
@@ -947,6 +949,7 @@ ssize_t Rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
  *       -1 with errno set for other errors.
  */
 /* $begin open_clientfd */
+/* /* 클라이언트 측의 getaddrinfo,socket,connet 함수의 기능을 모두 수행 , 서버와 연결*/
 int open_clientfd(char *hostname, char *port) {
     int clientfd, rc;
     struct addrinfo hints, *listp, *p;
@@ -956,20 +959,25 @@ int open_clientfd(char *hostname, char *port) {
     hints.ai_socktype = SOCK_STREAM;  /* Open a connection */
     hints.ai_flags = AI_NUMERICSERV;  /* ... using a numeric port arg. */
     hints.ai_flags |= AI_ADDRCONFIG;  /* Recommended for connections */
+    
+    //hostname과 port number에 맞는 addrinfo 구조체를 가지는 연결리스트를 얻어온다.
     if ((rc = getaddrinfo(hostname, port, &hints, &listp)) != 0) {
         fprintf(stderr, "getaddrinfo failed (%s:%s): %s\n", hostname, port, gai_strerror(rc));
         return -2;
     }
   
+    //연결리스트에 들어있는 구조체를 보며 connect 시도
     /* Walk the list for one that we can successfully connect to */
     for (p = listp; p; p = p->ai_next) {
         /* Create a socket descriptor */
         if ((clientfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) 
             continue; /* Socket failed, try the next */
-
+       
         /* Connect to the server */
         if (connect(clientfd, p->ai_addr, p->ai_addrlen) != -1) 
             break; /* Success */
+
+        //connect에 실패하면 다음 항목을 시도하기 전에 클라이언트의 소켓 식별자를 close 
         if (close(clientfd) < 0) { /* Connect failed, try another */  //line:netp:openclientfd:closefd
             fprintf(stderr, "open_clientfd: close failed: %s\n", strerror(errno));
             return -1;
@@ -994,6 +1002,8 @@ int open_clientfd(char *hostname, char *port) {
  *       -1 with errno set for other errors.
  */
 /* $begin open_listenfd */
+/* 서버 측에서 getaddrinfo, socket, bind,listen 함수의 기능 수행.
+    클라이언트로부터의 연결요청을 받을 준비가 된 listen descriptor를 생성*/
 int open_listenfd(char *port) 
 {
     struct addrinfo hints, *listp, *p;
@@ -1004,9 +1014,11 @@ int open_listenfd(char *port)
     hints.ai_socktype = SOCK_STREAM;             /* Accept connections */
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG; /* ... on any IP address */
     hints.ai_flags |= AI_NUMERICSERV;            /* ... using port number */
-    if ((rc = getaddrinfo(NULL, port, &hints, &listp)) != 0) {
+
+    if ((rc = getaddrinfo(NULL, port, &hints, &listp)) != 0) {  //NULL - 이 서버가 이 호스트에 대한 모든 ip 주소에 대해 요청을 받을 것
         fprintf(stderr, "getaddrinfo failed (port %s): %s\n", port, gai_strerror(rc));
-        return -2;
+        return
+         -2;
     }
 
     /* Walk the list for one that we can bind to */

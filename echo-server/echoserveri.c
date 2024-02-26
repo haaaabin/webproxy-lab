@@ -22,8 +22,7 @@ int main(int argc, char **argv)
     while (1) { 
         clientlen = sizeof(struct sockaddr_storage);    //클라이언트 주소 구조체의 크기 설정
         connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);   //클라이언트의 연결을 수락하고 클라이언트 소켓 디스크립터 반환
-        Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, 
-                MAXLINE, client_port, MAXLINE, 0);   //클라이언트의 주소를 호스트 이름과 포트번호로 변환
+        Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAXLINE, client_port, MAXLINE, 0);   //클라이언트의 주소를 호스트 이름과 포트번호로 변환
         printf("Connected to (%s, %s)\n", client_hostname, client_port);
         echo(connfd);
         Close(connfd);

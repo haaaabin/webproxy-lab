@@ -12,7 +12,7 @@ void echo(int connfd)
     rio_t rio;      //타입의 구조체로, 안전한 방식으로 데이터를 읽고 쓰는데 사용되는 리오 버퍼
 
     Rio_readinitb(&rio, connfd);    //리오 구조체 초기화
-    while((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) { //line:netp:echo:eof
+    while((n = Rio_readlineb(&rio, buf,MAXLINE)) != 0) { //line:netp:echo:eof
 	printf("server received %d bytes\n", (int)n);
 	Rio_writen(connfd, buf, n);     //클라이언트에게 데이터 다시 전송. buf에 있는 데이터를 소켓으로 전송
     }

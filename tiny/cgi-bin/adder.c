@@ -15,10 +15,10 @@ int main(void)
   {
     p = strchr(buf, '&'); //쿼리 문자열에서 첫 번째 &문자를 찾아 그 위치를 반환한다.
     *p = '\0';
-    strcpy(arg1, buf);
-    strcpy(arg2, p + 1);
-    n1 = atoi(arg1);  //문자열을 정수로 변환하는 함수
-    n2 = atoi(arg2);  
+    // strcpy(arg1, buf);
+    // strcpy(arg2, p + 1);
+    // n1 = atoi(arg1);  //문자열을 정수로 변환하는 함수
+    // n2 = atoi(arg2);  
     
     /* adder 함수 */
     sscanf(buf, "n1=%d", &n1);

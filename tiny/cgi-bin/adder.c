@@ -6,7 +6,7 @@
 
 int main(void)
 {
-  char *buf, *p;
+  char *buf, *p, *method;
   char arg1[MAXLINE], arg2[MAXLINE], content[MAXLINE];
   int n1 = 0, n2 = 0;
 
@@ -20,10 +20,12 @@ int main(void)
     // n1 = atoi(arg1);  //문자열을 정수로 변환하는 함수
     // n2 = atoi(arg2);  
     
-    /* adder 함수 */
+    // /* adder 함수 */
     sscanf(buf, "n1=%d", &n1);
     sscanf(p+1, "n2=%d", &n2);
   }
+
+  method = getenv("REQUEST_METHOD");
 
   /* Make the response body */
   sprintf(content, "Welcome to add.com: ");
@@ -36,7 +38,11 @@ int main(void)
   printf("Connection: close\r\n");
   printf("Content-length: %d\r\n", (int)strlen(content));
   printf("Content-type: text/html\r\n\r\n");
-  printf("%s", content);
+
+  if(strcasecmp(method, "HEAD") != 0)
+  {
+    printf("%s", content);
+  }
   fflush(stdout); //출력 버퍼 비워서 모든 내용 즉시 클라이언트로 보냄
 
   exit(0);

@@ -89,6 +89,7 @@ void doit(int fd)
     return;
   }
   read_requesthdrs(&rio);
+
   http_version = version;
 
   is_static = parse_uri(uri, filename, cgiargs);

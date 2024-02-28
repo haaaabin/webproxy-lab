@@ -16,8 +16,10 @@ void get_filetype(char *filename, char *filetype);
 void serve_dynamic(int fd, char *filename, char *cgiargs, char *method);
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg,
                  char *longmsg);
-
 void echo(int connfd);
+
+/* 11.6C http_version */
+char *http_version;
 
 int main(int argc, char **argv)
 {
@@ -80,13 +82,14 @@ void doit(int fd)
   printf("%s", buf); // 헤더 GET / 1.0 정보
   sscanf(buf, "%s %s %s", method, uri, version);
 
-  // strcasecmp() 대소문자 무시하고 두 개의 문자열을 비교하는 함수, 같으면 0 다르면 0이 아닌 값 반환
+  // strcasecmp() 대소문자 무시하고 두 개의 문자열을 비교하는 함수, 같으면 0 다르면 1 반환
   if (strcasecmp(method, "GET") != 0 && strcasecmp(method, "HEAD") !=0)
   {
     clienterror(fd, method, "501", "Not implemented", "Tiny does not implement this method");
     return;
   }
   read_requesthdrs(&rio);
+  http_version = version;
 
   is_static = parse_uri(uri, filename, cgiargs);
   if (stat(filename, &sbuf) < 0)
@@ -133,7 +136,7 @@ void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longms
   sprintf(body, "%s<hr><em>The Tiny Web server</em>/r/n", body);
 
   /*Print the HTTP response*/
-  sprintf(buf, "HTTP/1.0 %s %s\r\n", errnum, shortmsg);
+  sprintf(buf, "%s %s %s\r\n", http_version, errnum, shortmsg);
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Content-type: text/html/\r\n");
   Rio_writen(fd, buf, strlen(buf));
@@ -205,7 +208,7 @@ void serve_static(int fd, char *filename, int filesize ,char *method)
 
   // HTTP 응답 헤더를 생성하여 클라이언트에게 전송
   get_filetype(filename, filetype); // 파일의 MIME 타입을 가져옴
-  sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  sprintf(buf, "%s 200 OK\r\n", http_version);
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
   Rio_writen(fd, buf, strlen(buf));
@@ -260,7 +263,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs, char *method)
   char buf[MAXLINE], *emptylist[] = {NULL};
 
   /* Return first part of HTTP response */
-  sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  sprintf(buf, "%s 200 OK\r\n", http_version);
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
   Rio_writen(fd, buf, strlen(buf));

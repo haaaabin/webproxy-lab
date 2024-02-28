@@ -102,7 +102,7 @@ void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longms
   sprintf(body, "%s<hr><em>The Tiny Web server</em>/r/n", body);
 
   /*Print the HTTP response*/
-  sprintf(buf, "%s %s %s\r\n", http_version, errnum, shortmsg);
+  sprintf(buf, "%s %s %s\r\n", errnum, shortmsg);
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Content-type: text/html/\r\n");
   Rio_writen(fd, buf, strlen(buf));
@@ -182,7 +182,7 @@ void serve_static(int fd, char *filename, int filesize ,char *method)
 
   // HTTP 응답 헤더를 생성하여 클라이언트에게 전송
   get_filetype(filename, filetype); // 파일의 MIME 타입을 가져옴
-  sprintf(buf, "%s 200 OK\r\n", http_version);
+  sprintf(buf, "HTTP/1.1 200 OK\r\n");
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
   Rio_writen(fd, buf, strlen(buf));
@@ -237,7 +237,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs, char *method)
   char buf[MAXLINE], *emptylist[] = {NULL};
 
   /* Return first part of HTTP response */
-  sprintf(buf, "%s 200 OK\r\n", http_version);
+  sprintf(buf, "HTTP/1.1 200 OK\r\n");
   Rio_writen(fd, buf, strlen(buf));
   sprintf(buf, "Server: Tiny Web Server\r\n");
   Rio_writen(fd, buf, strlen(buf));
